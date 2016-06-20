@@ -104,40 +104,45 @@ uint8_t IsoTp::rcv_fc(struct Message_t *msg)
 		/* fix wrong STmin values according spec */
 		if ((msg->min_sep_time > 0x7F) && ((msg->min_sep_time < 0xF1) 
 				|| (msg->min_sep_time > 0xF9))) msg->min_sep_time = 0x7F;
-													}
-		Serial.print(F("FC frame: FS "));
-		Serial.print(rxBuffer[0]&0x0F);
-		Serial.print(F(", Blocksize "));
-		Serial.print(msg->blocksize);
-		Serial.print(F(", Min. separation Time "));
-		Serial.println(msg->min_sep_time);
+	}
 
-		switch (rxBuffer[0] & 0x0F)
-		{
-		  case ISOTP_FC_CTS:
-												  msg->tp_state = ISOTP_SEND_CF;
-												  break;
+	Serial.print(F("FC frame: FS "));
+	Serial.print(rxBuffer[0]&0x0F);
+	Serial.print(F(", Blocksize "));
+	Serial.print(msg->blocksize);
+	Serial.print(F(", Min. separation Time "));
+	Serial.println(msg->min_sep_time);
+  
+	switch (rxBuffer[0] & 0x0F)
+	{
+	  case ISOTP_FC_CTS:
+											  msg->tp_state = ISOTP_SEND_CF;
+											  break;
 
-			case ISOTP_FC_WT:
-												  Serial.println(F("Start waiting for next FC"));
-												  break;
+		case ISOTP_FC_WT:
+											  Serial.println(F("Start waiting for next FC"));
+											  break;
 
-		  case ISOTP_FC_OVFLW:
-												  Serial.println(F("Overflow in receiver side"));
+	  case ISOTP_FC_OVFLW:
+											  Serial.println(F("Overflow in receiver side"));
 
-		  default:
-											  	/* stop this tx job. TODO: error reporting? */
-												  msg->tp_state = ISOTP_IDLE;
-		}
-		return 0;
+	  default:
+										  	/* stop this tx job. TODO: error reporting? */
+											  msg->tp_state = ISOTP_IDLE;
+	}
+	return 0;
 }
 
 uint8_t IsoTp::send(Message_t* msg)
 {
+	uint8_t bs=false;
+
 	msg->tp_state=ISOTP_SEND;
 
 	while(msg->tp_state!=ISOTP_IDLE && msg->tp_state!=ISOTP_ERROR)
 	{
+		bs=false;
+
     Serial.print(F("ISO-TP State: ")); Serial.println(msg->tp_state);
     Serial.print(F("Length      : ")); Serial.println(msg->len);
 
@@ -169,13 +174,24 @@ uint8_t IsoTp::send(Message_t* msg)
 		                       break;
 		  case ISOTP_SEND_CF : 
 												   Serial.println(F("Send CF"));
- 												   while(msg->len>7) 
+ 												   while(msg->len>7 & !bs) 
  												   {
 													   fc_delay(msg->min_sep_time);
 													   if(!send_cf(msg))
  													   {
                                Serial.print(F("Send Seq "));
 														   Serial.println(msg->seq_id);
+														   if(msg->blocksize > 0)
+															 {
+																 Serial.print(F("Blocksize trigger "));
+																 Serial.print(msg->seq_id % msg->blocksize);
+														     if(!(msg->seq_id % msg->blocksize))
+																  {
+																		bs=true;
+																		msg->tp_state=ISOTP_WAIT_FC;
+																		Serial.println(F(" yes"));
+																	} else Serial.println(F(" no"));
+															 }
                                msg->seq_id++;
 														   msg->seq_id %= 16;
 														   msg->Buffer+=7;
@@ -184,11 +200,14 @@ uint8_t IsoTp::send(Message_t* msg)
 														   Serial.println(msg->len);                        
 													   }
 												   }
-												   fc_delay(msg->min_sep_time);
-												   Serial.print(F("Send last Seq "));
-												   Serial.println(msg->seq_id);
-												   send_cf(msg);
-												   msg->tp_state=ISOTP_IDLE;
+													 if(!bs)
+													 {
+												     fc_delay(msg->min_sep_time);
+												     Serial.print(F("Send last Seq "));
+												     Serial.println(msg->seq_id);
+												     send_cf(msg);
+												     msg->tp_state=ISOTP_IDLE;
+													 }
 												   break;
 		  default            : break;
    }
