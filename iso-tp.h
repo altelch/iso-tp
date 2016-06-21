@@ -5,13 +5,14 @@
 
 typedef enum {
   ISOTP_IDLE = 0,
-	ISOTP_SEND,
+  ISOTP_SEND,
   ISOTP_SEND_FF,
   ISOTP_SEND_CF,
   ISOTP_WAIT_FIRST_FC,
   ISOTP_WAIT_FC,
   ISOTP_WAIT_DATA,
-	ISOTP_ERROR
+  ISOTP_FINISHED,
+  ISOTP_ERROR
 } isotp_states_t;
 
 #define CAN_MAX_DLEN 8  //Not extended CAN
@@ -55,6 +56,7 @@ class IsoTp
 		uint32_t rxId;
 		uint8_t  rxLen;
 		uint8_t  rxBuffer[8];
+                uint16_t rest;
 		uint8_t  can_send(uint16_t id, uint8_t len, uint8_t *data);
 		uint8_t  can_receive(void);
 		void     can_print_frame(void);
@@ -62,6 +64,9 @@ class IsoTp
 		uint8_t  send_sf(struct Message_t* msg);
 		uint8_t  send_ff(struct Message_t* msg);
 		uint8_t  send_cf(struct Message_t* msg);
+		uint8_t  rcv_sf(struct Message_t* msg);
+		uint8_t  rcv_ff(struct Message_t* msg);
+		uint8_t  rcv_cf(struct Message_t* msg);
 		uint8_t  rcv_fc(struct Message_t* msg);
 		void     fc_delay(uint8_t sep_time);
 };
