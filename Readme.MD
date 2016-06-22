@@ -16,9 +16,11 @@ Currently implemented:
 * Session timeout
 * FC timeout
 * CF timeout
-* Timeout after to many FC Wait messages
+* Timeout after too many FC Wait messages
 
 Missing:
 
 * Error handling
 * support for 29 bit extended CAN messages
+
+See usage example in example/send_receive/send_receive.ino
