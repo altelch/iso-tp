@@ -40,8 +40,8 @@ struct Message_t
   uint8_t fc_status=ISOTP_FC_CTS;
   uint8_t blocksize=0;
   uint8_t min_sep_time=0;
-  uint16_t tx_id=0;
-  uint16_t rx_id=0;
+  uint32_t tx_id=0;
+  uint32_t rx_id=0;
   uint8_t *Buffer;
 };
 
@@ -59,7 +59,8 @@ class IsoTp
                 uint16_t rest;
 		uint8_t  can_send(uint16_t id, uint8_t len, uint8_t *data);
 		uint8_t  can_receive(void);
-		void     can_print_frame(void);
+		void     print_buffer(uint32_t id, uint8_t *buffer,
+                                      uint16_t len);
 		uint8_t  send_fc(struct Message_t* msg);
 		uint8_t  send_sf(struct Message_t* msg);
 		uint8_t  send_ff(struct Message_t* msg);
