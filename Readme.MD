@@ -13,10 +13,12 @@ Currently implemented:
 * Receive ISO-TP single frame messages
 * Receive ISO-TP multi frame messages
 * Send flow controll as configured in message (minimum separation time + block size)
+* Session timeout
+* FC timeout
+* CF timeout
+* Timeout after to many FC Wait messages
 
 Missing:
 
 * Error handling
-* timeouts in send and receive path
-* handling to many flow controll wait or overflow messages
 * support for 29 bit extended CAN messages

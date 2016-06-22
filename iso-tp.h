@@ -3,6 +3,8 @@
 
 #include <mcp_can.h>
 
+//#define ISO_TP_DEBUG
+
 typedef enum {
   ISOTP_IDLE = 0,
   ISOTP_SEND,
@@ -29,6 +31,12 @@ typedef enum {
 #define ISOTP_FC_CTS  0   /* clear to send */
 #define ISOTP_FC_WT 1     /* wait */
 #define ISOTP_FC_OVFLW  2 /* overflow */
+
+/* Timeout values */
+#define TIMEOUT_SESSION 1000 /* Timeout between successfull send and receive */
+#define TIMEOUT_FC       250 /* Timeout between FF and FC or Block CF and FC */
+#define TIMEOUT_CF       250 /* Timeout between CFs                          */
+#define MAX_FCWAIT_FRAME  10   
 
 #define MAX_MSGBUF 128    /* Received Message Buffer. Depends on uC ressources!
                              Should be enough for our needs */
@@ -57,6 +65,10 @@ class IsoTp
 		uint8_t  rxLen;
 		uint8_t  rxBuffer[8];
                 uint16_t rest;
+		uint8_t  fc_wait_frames=0;
+		uint32_t wait_fc=0;
+		uint32_t wait_cf=0;
+                uint32_t wait_session=0;
 		uint8_t  can_send(uint16_t id, uint8_t len, uint8_t *data);
 		uint8_t  can_receive(void);
 		void     print_buffer(uint32_t id, uint8_t *buffer,

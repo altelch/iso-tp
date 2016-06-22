@@ -21,18 +21,18 @@ void setup()
 }
 
 void loop()
-{
-  delay(3000);
-  
+{ 
   TxMsg.len=sizeof(mf_test);
   TxMsg.Buffer=(uint8_t *)calloc(MAX_MSGBUF,sizeof(uint8_t));
   TxMsg.tx_id=can_id;
   TxMsg.rx_id=can_id+0x20;
   memcpy(TxMsg.Buffer,mf_test,sizeof(mf_test));
+  Serial.println(F("Send..."));
   isotp.send(&TxMsg);
   
   RxMsg.tx_id=can_id;
   RxMsg.rx_id=can_id+0x20;
   RxMsg.Buffer=(uint8_t *)calloc(MAX_MSGBUF,sizeof(uint8_t));
+  Serial.println(F("Receive..."));
   isotp.receive(&RxMsg);
 }
