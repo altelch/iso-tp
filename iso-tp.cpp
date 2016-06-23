@@ -385,7 +385,7 @@ uint8_t IsoTp::send(Message_t* msg)
       Serial.println(F("CAN RAW Data"));
       print_buffer(rxId, rxBuffer, rxLen);
 #endif
-      rcv_fc(msg);
+      retval=rcv_fc(msg);
       memset(rxBuffer,0,sizeof(rxBuffer));
     }
   }
