@@ -383,7 +383,6 @@ uint8_t IsoTp::send(Message_t* msg)
     }
   }
 
-  wait_session=millis();
   return 0;
 }
 
@@ -392,6 +391,7 @@ uint8_t IsoTp::receive(Message_t* msg)
   uint8_t n_pci_type=0;
   uint32_t delta=0;
 
+  wait_session=millis();
 #ifdef ISO_TP_DEBUG
   Serial.println(F("Start receive..."));
 #endif
@@ -459,8 +459,10 @@ uint8_t IsoTp::receive(Message_t* msg)
       memset(rxBuffer,0,sizeof(rxBuffer));
     }
   }
+#ifdef ISO_TP_DEBUG
   Serial.println(F("ISO-TP message received:"));
   print_buffer(msg->rx_id, msg->Buffer, msg->len);
+#endif
 
   return 0;
 }
