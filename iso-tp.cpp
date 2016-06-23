@@ -200,6 +200,8 @@ uint8_t IsoTp::rcv_cf(struct Message_t* msg)
 
 uint8_t IsoTp::rcv_fc(struct Message_t* msg)
 {
+  uint8_t retval=0;
+
   if (msg->tp_state != ISOTP_WAIT_FC && msg->tp_state != ISOTP_WAIT_FIRST_FC)
     return 0;
 
@@ -237,6 +239,7 @@ uint8_t IsoTp::rcv_fc(struct Message_t* msg)
 #endif
                            fc_wait_frames=0;
                            msg->tp_state = ISOTP_IDLE;
+                           retval=1;
                          }
 #ifdef ISO_TP_DEBUG
                          Serial.println(F("Start waiting for next FC"));
@@ -248,14 +251,16 @@ uint8_t IsoTp::rcv_fc(struct Message_t* msg)
 #endif
     default:
                          msg->tp_state = ISOTP_IDLE;
+                         retval=1;
   }
-  return 0;
+  return retval;
 }
 
 uint8_t IsoTp::send(Message_t* msg)
 {
   uint8_t bs=false;
   uint32_t delta=0;
+  uint8_t retval=0;
 
   msg->tp_state=ISOTP_SEND;
 
@@ -277,14 +282,15 @@ uint8_t IsoTp::send(Message_t* msg)
 #ifdef ISO_TP_DEBUG
  			           Serial.println(F("Send SF"));
 #endif
- 		                   return send_sf(msg);
+                                   retval=send_sf(msg);
+                                   msg->tp_state=ISOTP_IDLE;
                                  }
                                  else
                                  {
 #ifdef ISO_TP_DEBUG
                                    Serial.println(F("Send FF"));
 #endif
-                                   if(!send_ff(msg)) // FF complete
+                                   if(!(retval=send_ff(msg))) // FF complete
                                    {
                                      msg->Buffer+=6;
                                      msg->len-=6;
@@ -309,6 +315,7 @@ uint8_t IsoTp::send(Message_t* msg)
                                    Serial.println(delta);
 #endif
                                    msg->tp_state = ISOTP_IDLE;
+				   retval=1;
                                  }
                                  break;
       case ISOTP_WAIT_FC      :
@@ -323,7 +330,7 @@ uint8_t IsoTp::send(Message_t* msg)
                                  while(msg->len>7 & !bs) 
                                  {
                                    fc_delay(msg->min_sep_time);
-                                   if(!send_cf(msg))
+                                   if(!(retval=send_cf(msg)))
                                    {
 #ifdef ISO_TP_DEBUG
                                      Serial.print(F("Send Seq "));
@@ -365,7 +372,7 @@ uint8_t IsoTp::send(Message_t* msg)
                                    Serial.print(F("Send last Seq "));
                                    Serial.println(msg->seq_id);
 #endif
-                                   send_cf(msg);
+                                   retval=send_cf(msg);
                                    msg->tp_state=ISOTP_IDLE;
                                  }
                                  break;
@@ -383,7 +390,7 @@ uint8_t IsoTp::send(Message_t* msg)
     }
   }
 
-  return 0;
+  return retval;
 }
 
 uint8_t IsoTp::receive(Message_t* msg)
