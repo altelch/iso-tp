@@ -17,10 +17,11 @@ Currently implemented:
 * FC timeout
 * CF timeout
 * Timeout after too many FC Wait messages
+* some error handling
 
 Missing:
 
-* Error handling
 * support for 29 bit extended CAN messages
+* frame padding
 
 See usage example in example/send_receive/send_receive.ino
