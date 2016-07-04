@@ -59,20 +59,19 @@ class IsoTp
 		IsoTp(MCP_CAN* bus);
 		uint8_t send(Message_t* msg);
 		uint8_t receive(Message_t* msg);
+		void    print_buffer(uint32_t id, uint8_t *buffer, uint16_t len);
 	private:
 		MCP_CAN* _bus;
 		uint32_t rxId;
 		uint8_t  rxLen;
 		uint8_t  rxBuffer[8];
-                uint16_t rest;
+    uint16_t rest;
 		uint8_t  fc_wait_frames=0;
 		uint32_t wait_fc=0;
 		uint32_t wait_cf=0;
-                uint32_t wait_session=0;
+    uint32_t wait_session=0;
 		uint8_t  can_send(uint16_t id, uint8_t len, uint8_t *data);
 		uint8_t  can_receive(void);
-		void     print_buffer(uint32_t id, uint8_t *buffer,
-                                      uint16_t len);
 		uint8_t  send_fc(struct Message_t* msg);
 		uint8_t  send_sf(struct Message_t* msg);
 		uint8_t  send_ff(struct Message_t* msg);
@@ -81,7 +80,7 @@ class IsoTp
 		uint8_t  rcv_ff(struct Message_t* msg);
 		uint8_t  rcv_cf(struct Message_t* msg);
 		uint8_t  rcv_fc(struct Message_t* msg);
-		void     fc_delay(uint8_t sep_time);
+    void     fc_delay(uint8_t sep_time);
 };
                              
 #endif
