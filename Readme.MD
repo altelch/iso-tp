@@ -2,7 +2,8 @@ ISO 15765-2 ISO-TP protocol implementation for Arduino
 
 This implementation requires MCP_CAN_lib from
 
-https://github.com/coryjfowler/MCP_CAN_lib/tree/Sub-Development
+https://github.com/altelch/MCP_CAN_lib which is simply a Fork of 
+https://github.com/coryjfowler/MCP_CAN_lib with debug output disabled.
 
 Currently implemented:
 
