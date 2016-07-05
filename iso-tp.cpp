@@ -385,8 +385,14 @@ uint8_t IsoTp::send(Message_t* msg)
       Serial.println(F("CAN RAW Data"));
       print_buffer(rxId, rxBuffer, rxLen);
 #endif
-      retval=rcv_fc(msg);
-      memset(rxBuffer,0,sizeof(rxBuffer));
+      if(rxId==msg->rx_id)
+      {
+        retval=rcv_fc(msg);
+        memset(rxBuffer,0,sizeof(rxBuffer));
+#ifdef ISO_TP_DEBUG
+        Serial.println(F("rxId OK!"));
+#endif
+      }
     }
   }
 
@@ -426,6 +432,9 @@ uint8_t IsoTp::receive(Message_t* msg)
 
       if(rxId==msg->rx_id)
       {
+#ifdef ISO_TP_DEBUG
+        Serial.println(F("rxId OK!"));
+#endif
         n_pci_type=rxBuffer[0] & 0xF0;
 
         switch (n_pci_type)
