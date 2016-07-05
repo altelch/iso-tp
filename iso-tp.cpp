@@ -423,11 +423,14 @@ uint8_t IsoTp::receive(Message_t* msg)
       Serial.println(F("CAN RAW Data"));
       print_buffer(rxId, rxBuffer, rxLen);
 #endif
-      n_pci_type=rxBuffer[0] & 0xF0;
 
-      switch (n_pci_type)
+      if(rxId==msg->rx_id)
       {
-        case N_PCI_FC:
+        n_pci_type=rxBuffer[0] & 0xF0;
+
+        switch (n_pci_type)
+        {
+          case N_PCI_FC:
 #ifdef ISO_TP_DEBUG
                       Serial.println(F("Got FC"));
 #endif
@@ -435,7 +438,7 @@ uint8_t IsoTp::receive(Message_t* msg)
                       rcv_fc(msg);
                       break;
 
-        case N_PCI_SF:
+          case N_PCI_SF:
 #ifdef ISO_TP_DEBUG
                       Serial.println(F("Got SF"));
 #endif
@@ -444,7 +447,7 @@ uint8_t IsoTp::receive(Message_t* msg)
 		      msg->tp_state=ISOTP_FINISHED;
                       break;
 
-        case N_PCI_FF:
+          case N_PCI_FF:
 #ifdef ISO_TP_DEBUG
                       Serial.println(F("Got FF"));
 #endif
@@ -454,16 +457,16 @@ uint8_t IsoTp::receive(Message_t* msg)
                       break;
                       break;
 
-        case N_PCI_CF:
+          case N_PCI_CF:
 #ifdef ISO_TP_DEBUG
                       Serial.println(F("Got CF"));
 #endif
                       /* rx path: consecutive frame */
                       rcv_cf(msg);
                       break;
+        }
+        memset(rxBuffer,0,sizeof(rxBuffer));
       }
-
-      memset(rxBuffer,0,sizeof(rxBuffer));
     }
   }
 #ifdef ISO_TP_DEBUG
