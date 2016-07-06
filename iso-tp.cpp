@@ -379,19 +379,25 @@ uint8_t IsoTp::send(Message_t* msg)
       default                 :  break;
     }
 
-    if(can_receive())
+    
+    if(msg->tp_state==ISOTP_WAIT_FIRST_FC || 
+       msg->tp_state==ISOTP_WAIT_FC)
     {
-#ifdef ISO_TP_DEBUG
-      Serial.println(F("CAN RAW Data"));
-      print_buffer(rxId, rxBuffer, rxLen);
-#endif
-      if(rxId==msg->rx_id)
+      if(can_receive())
       {
-        retval=rcv_fc(msg);
-        memset(rxBuffer,0,sizeof(rxBuffer));
 #ifdef ISO_TP_DEBUG
-        Serial.println(F("rxId OK!"));
+        Serial.println(F("Send branch:"));
+        Serial.println(F("CAN RAW Data"));
+        print_buffer(rxId, rxBuffer, rxLen);
 #endif
+        if(rxId==msg->rx_id)
+        {
+          retval=rcv_fc(msg);
+          memset(rxBuffer,0,sizeof(rxBuffer));
+#ifdef ISO_TP_DEBUG
+          Serial.println(F("rxId OK!"));
+#endif
+        }
       }
     }
   }
