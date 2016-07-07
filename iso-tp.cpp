@@ -27,6 +27,10 @@ void IsoTp::print_buffer(uint32_t id, uint8_t *buffer, uint16_t len)
 
 uint8_t IsoTp::can_send(const uint16_t id, uint8_t len, uint8_t *data)
 {
+#ifdef ISO_TP_DEBUG
+  Serial.println(F("Send CAN RAW Data:"));
+  print_buffer(id, data, len);
+#endif
   return _bus->sendMsgBuf(id, 0, len, data);
 }
 
@@ -35,6 +39,10 @@ uint8_t IsoTp::can_receive(void)
   if (!digitalRead(2))                  // If pin 2 is low, read receive buffer
   {
     _bus->readMsgBuf(&rxId, &rxLen, rxBuffer); // Read data: buf = data byte(s)
+#ifdef ISO_TP_DEBUG
+     Serial.println(F("Received CAN RAW Data:"));
+     print_buffer(rxId, rxBuffer, rxLen);
+#endif
     return true;
   }
   else return false;
@@ -387,8 +395,6 @@ uint8_t IsoTp::send(Message_t* msg)
       {
 #ifdef ISO_TP_DEBUG
         Serial.println(F("Send branch:"));
-        Serial.println(F("CAN RAW Data"));
-        print_buffer(rxId, rxBuffer, rxLen);
 #endif
         if(rxId==msg->rx_id)
         {
@@ -431,11 +437,6 @@ uint8_t IsoTp::receive(Message_t* msg)
 
     if(can_receive())
     {
-#ifdef ISO_TP_DEBUG
-      Serial.println(F("CAN RAW Data"));
-      print_buffer(rxId, rxBuffer, rxLen);
-#endif
-
       if(rxId==msg->rx_id)
       {
 #ifdef ISO_TP_DEBUG
@@ -447,7 +448,7 @@ uint8_t IsoTp::receive(Message_t* msg)
         {
           case N_PCI_FC:
 #ifdef ISO_TP_DEBUG
-                      Serial.println(F("Got FC"));
+                      Serial.println(F("FC"));
 #endif
                       /* tx path: fc frame */
                       rcv_fc(msg);
@@ -455,26 +456,26 @@ uint8_t IsoTp::receive(Message_t* msg)
 
           case N_PCI_SF:
 #ifdef ISO_TP_DEBUG
-                      Serial.println(F("Got SF"));
+                      Serial.println(F("SF"));
 #endif
                       /* rx path: single frame */
                       rcv_sf(msg);
-		      msg->tp_state=ISOTP_FINISHED;
+//		      msg->tp_state=ISOTP_FINISHED;
                       break;
 
           case N_PCI_FF:
 #ifdef ISO_TP_DEBUG
-                      Serial.println(F("Got FF"));
+                      Serial.println(F("FF"));
 #endif
                       /* rx path: first frame */
                       rcv_ff(msg);
-		      msg->tp_state=ISOTP_WAIT_DATA;
+//		      msg->tp_state=ISOTP_WAIT_DATA;
                       break;
                       break;
 
           case N_PCI_CF:
 #ifdef ISO_TP_DEBUG
-                      Serial.println(F("Got CF"));
+                      Serial.println(F("CF"));
 #endif
                       /* rx path: consecutive frame */
                       rcv_cf(msg);

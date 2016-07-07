@@ -33,9 +33,9 @@ typedef enum {
 #define ISOTP_FC_OVFLW  2 /* overflow */
 
 /* Timeout values */
-#define TIMEOUT_SESSION 1000 /* Timeout between successfull send and receive */
-#define TIMEOUT_FC       500 /* Timeout between FF and FC or Block CF and FC */
-#define TIMEOUT_CF       500 /* Timeout between CFs                          */
+#define TIMEOUT_SESSION  500 /* Timeout between successfull send and receive */
+#define TIMEOUT_FC       250 /* Timeout between FF and FC or Block CF and FC */
+#define TIMEOUT_CF       250 /* Timeout between CFs                          */
 #define MAX_FCWAIT_FRAME  10   
 
 #define MAX_MSGBUF 128    /* Received Message Buffer. Depends on uC ressources!
