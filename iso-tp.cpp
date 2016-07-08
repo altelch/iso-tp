@@ -38,7 +38,8 @@ uint8_t IsoTp::can_receive(void)
 {
   if (!digitalRead(2))                  // If pin 2 is low, read receive buffer
   {
-    _bus->readMsgBuf(&rxId, &rxLen, rxBuffer); // Read data: buf = data byte(s)
+     memset(rxBuffer,0,sizeof(rxBuffer));       // Cleanup Buffer
+     _bus->readMsgBuf(&rxId, &rxLen, rxBuffer); // Read data: buf = data byte(s)
 #ifdef ISO_TP_DEBUG
      Serial.println(F("Received CAN RAW Data:"));
      print_buffer(rxId, rxBuffer, rxLen);
