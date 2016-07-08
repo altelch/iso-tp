@@ -50,7 +50,7 @@ uint8_t IsoTp::can_receive(void)
 
 uint8_t IsoTp::send_fc(struct Message_t *msg)
 {
-  uint8_t TxBuf[3]={0x00, 0x00, 0x00};
+  uint8_t TxBuf[8]={0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
   // FC message high nibble = 0x3 , low nibble = FC Status
   TxBuf[0]=(N_PCI_FC | msg->fc_status);
   TxBuf[1]=msg->blocksize;
@@ -58,7 +58,7 @@ uint8_t IsoTp::send_fc(struct Message_t *msg)
   if ((msg->min_sep_time > 0x7F) && ((msg->min_sep_time < 0xF1) 
       || (msg->min_sep_time > 0xF9))) msg->min_sep_time = 0x7F;
   TxBuf[2]=msg->min_sep_time;
-  return can_send(msg->tx_id,3,TxBuf);
+  return can_send(msg->tx_id,8,TxBuf);
 }
 
 uint8_t IsoTp::send_sf(struct Message_t *msg) //Send SF Message
@@ -67,7 +67,8 @@ uint8_t IsoTp::send_sf(struct Message_t *msg) //Send SF Message
   // SF message high nibble = 0x0 , low nibble = Length
   TxBuf[0]=(N_PCI_SF | msg->len);
   memcpy(TxBuf+1,msg->Buffer,msg->len);
-  return can_send(msg->tx_id,msg->len+1,TxBuf);// Add PCI length
+//  return can_send(msg->tx_id,msg->len+1,TxBuf);// Add PCI length
+  return can_send(msg->tx_id,8,TxBuf);// Always send full frame
 }
 
 uint8_t IsoTp::send_ff(struct Message_t *msg) // Send FF
@@ -89,8 +90,10 @@ uint8_t IsoTp::send_cf(struct Message_t *msg) // Send SF Message
   TxBuf[0]=(N_PCI_CF | (msg->seq_id & 0x0F));
   if(msg->len>7) len=7; else len=msg->len;
   memcpy(TxBuf+1,msg->Buffer,len);         // Skip 1 Byte PCI
-  return can_send(msg->tx_id,len+1,TxBuf); // Last frame is probably shorter
+  //return can_send(msg->tx_id,len+1,TxBuf); // Last frame is probably shorter
                                            // than 8 -> Signals last CF Frame
+  return can_send(msg->tx_id,8,TxBuf);     // Last frame is probably shorter
+                                           // than 8, pad with 00 
 }
 
 void IsoTp::fc_delay(uint8_t sep_time)
