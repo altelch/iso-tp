@@ -4,8 +4,9 @@
 #include <mcp_can_dfs.h>
 #include <SPI.h>
 
-IsoTp::IsoTp(MCP_CAN* bus)
+IsoTp::IsoTp(MCP_CAN* bus, uint8_t mcp_int)
 {
+  _mcp_int = mcp_int;
   _bus = bus;
 }
 
@@ -36,7 +37,7 @@ uint8_t IsoTp::can_send(const uint16_t id, uint8_t len, uint8_t *data)
 
 uint8_t IsoTp::can_receive(void)
 {
-  if (!digitalRead(2))                  // If pin 2 is low, read receive buffer
+  if (!digitalRead(_mcp_int))            // If pin is low, read receive buffer
   {
      memset(rxBuffer,0,sizeof(rxBuffer));       // Cleanup Buffer
      _bus->readMsgBuf(&rxId, &rxLen, rxBuffer); // Read data: buf = data byte(s)

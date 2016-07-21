@@ -56,12 +56,13 @@ struct Message_t
 class IsoTp
 {
 	public:
-		IsoTp(MCP_CAN* bus);
+		IsoTp(MCP_CAN* bus, uint8_t mcp_int);
 		uint8_t send(Message_t* msg);
 		uint8_t receive(Message_t* msg);
 		void    print_buffer(uint32_t id, uint8_t *buffer, uint16_t len);
 	private:
 		MCP_CAN* _bus;
+                uint8_t  _mcp_int;
 		uint32_t rxId;
 		uint8_t  rxLen;
 		uint8_t  rxBuffer[8];
