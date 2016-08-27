@@ -20,8 +20,4 @@ Currently implemented:
 * some error handling
 * simple frame padding with 0x00
 
-Missing:
-
-* support for 29 bit extended CAN messages
-
 See usage example in example/send_receive/send_receive.ino
