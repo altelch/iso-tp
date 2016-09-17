@@ -26,7 +26,7 @@ void IsoTp::print_buffer(uint32_t id, uint8_t *buffer, uint16_t len)
   Serial.println();
 }
 
-uint8_t IsoTp::can_send(const uint32_t id, uint8_t len, uint8_t *data)
+uint8_t IsoTp::can_send(uint32_t id, uint8_t len, uint8_t *data)
 {
 #ifdef ISO_TP_DEBUG
   Serial.println(F("Send CAN RAW Data:"));

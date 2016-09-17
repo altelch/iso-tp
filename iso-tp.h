@@ -71,7 +71,7 @@ class IsoTp
 		uint32_t wait_fc=0;
 		uint32_t wait_cf=0;
     uint32_t wait_session=0;
-		uint8_t  can_send(uint16_t id, uint8_t len, uint8_t *data);
+		uint8_t  can_send(uint32_t id, uint8_t len, uint8_t *data);
 		uint8_t  can_receive(void);
 		uint8_t  send_fc(struct Message_t* msg);
 		uint8_t  send_sf(struct Message_t* msg);
