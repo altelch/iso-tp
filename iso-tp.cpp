@@ -37,7 +37,14 @@ uint8_t IsoTp::can_send(uint32_t id, uint8_t len, uint8_t *data)
 
 uint8_t IsoTp::can_receive(void)
 {
-  if (!digitalRead(_mcp_int))            // If pin is low, read receive buffer
+  bool msgReceived;
+  
+  if (_mcp_int)
+    msgReceived = (!digitalRead(_mcp_int));                     // IRQ: if pin is low, read receive buffer
+  else
+    msgReceived = (_bus->checkReceive() == CAN_MSGAVAIL);       // No IRQ: poll receive buffer
+  
+  if (msgReceived)
   {
      memset(rxBuffer,0,sizeof(rxBuffer));       // Cleanup Buffer
      _bus->readMsgBuf(&rxId, &rxLen, rxBuffer); // Read data: buf = data byte(s)
@@ -174,11 +181,11 @@ uint8_t IsoTp::rcv_cf(struct Message_t* msg)
 
   if (msg->tp_state != ISOTP_WAIT_DATA) return 0;
 
-  if ((rxBuffer[0] & 0x0F) != msg->seq_id)
+  if ((rxBuffer[0] & 0x0F) != (msg->seq_id & 0x0F))
   {
 #ifdef ISO_TP_DEBUG
     Serial.print(F("Got sequence ID: ")); Serial.print(rxBuffer[0] & 0x0F);
-    Serial.print(F(" Expected: ")); Serial.println(msg->seq_id);
+    Serial.print(F(" Expected: ")); Serial.println(msg->seq_id & 0x0F);
 #endif
     msg->tp_state = ISOTP_IDLE;
     msg->seq_id = 1;
@@ -206,7 +213,6 @@ uint8_t IsoTp::rcv_cf(struct Message_t* msg)
   }
 
   msg->seq_id++;
-  msg->seq_id %= 16; // Wrap around
 
   return 0;
 }

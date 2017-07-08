@@ -44,7 +44,7 @@ struct Message_t
 {
   uint8_t len=0;
   isotp_states_t tp_state=ISOTP_IDLE;
-  uint8_t seq_id=1;
+  uint16_t seq_id=1;
   uint8_t fc_status=ISOTP_FC_CTS;
   uint8_t blocksize=0;
   uint8_t min_sep_time=0;
