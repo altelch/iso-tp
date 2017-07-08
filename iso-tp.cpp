@@ -37,7 +37,14 @@ uint8_t IsoTp::can_send(uint32_t id, uint8_t len, uint8_t *data)
 
 uint8_t IsoTp::can_receive(void)
 {
-  if (!digitalRead(_mcp_int))            // If pin is low, read receive buffer
+  bool msgReceived;
+  
+  if (_mcp_int)
+    msgReceived = (!digitalRead(_mcp_int));                     // IRQ: if pin is low, read receive buffer
+  else
+    msgReceived = (_bus->checkReceive() == CAN_MSGAVAIL);       // No IRQ: poll receive buffer
+  
+  if (msgReceived)
   {
      memset(rxBuffer,0,sizeof(rxBuffer));       // Cleanup Buffer
      _bus->readMsgBuf(&rxId, &rxLen, rxBuffer); // Read data: buf = data byte(s)
