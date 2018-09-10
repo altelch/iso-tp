@@ -24,7 +24,7 @@ void setup()
 
 void loop()
 { 
-  TxMsg.len=sizeof(mf_test);
+  TxMsg.len=sizeof(sf_test);
   TxMsg.Buffer=(uint8_t *)calloc(MAX_MSGBUF,sizeof(uint8_t));
   TxMsg.tx_id=can_id;
   TxMsg.rx_id=can_id+0x20;
