@@ -42,7 +42,7 @@ typedef enum {
                              Should be enough for our needs */
 struct Message_t
 {
-  uint8_t len=0;
+  uint16_t len=0;
   isotp_states_t tp_state=ISOTP_IDLE;
   uint16_t seq_id=1;
   uint8_t fc_status=ISOTP_FC_CTS;
