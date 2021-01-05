@@ -3,8 +3,8 @@
 #include <SPI.h>
 #include <iso-tp.h>
 
-#define MCP_CS 5
-#define MCP_INT 16
+#define MCP_CS 5 // GPIO5 = VSPI CS0
+#define MCP_INT 16 // GPIO16
 
 MCP_CAN CAN0(MCP_CS);
 IsoTp isotp(&CAN0, MCP_INT);
@@ -17,12 +17,16 @@ unsigned long tx_can_id = 0x7E0;
 unsigned long rx_can_id = 0x7E8;
 
 void setup() {
-  txMsg.Buffer = (uint8_t *)calloc(MAX_MSGBUF, sizeof(uint8_t));
-  rxMsg.Buffer = (uint8_t *)calloc(MAX_MSGBUF, sizeof(uint8_t));
+  // serial
   Serial.begin(115200);
+  // interrupt
   pinMode(MCP_INT, INPUT);
+  // CAN
   CAN0.begin(MCP_ANY, CAN_500KBPS, MCP_8MHZ);
   CAN0.setMode(MCP_NORMAL);
+  // buffers
+  txMsg.Buffer = (uint8_t *)calloc(MAX_MSGBUF, sizeof(uint8_t));
+  rxMsg.Buffer = (uint8_t *)calloc(MAX_MSGBUF, sizeof(uint8_t));
 }
 
 void loop() {
