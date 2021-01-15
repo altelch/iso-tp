@@ -107,10 +107,19 @@ uint8_t IsoTp::send_cf(struct Message_t *msg) // Send SF Message
 
 void IsoTp::fc_delay(uint8_t sep_time)
 {
-  if(sep_time < 0x80)
+  /*
+  * 0x00 - 0x7F: 0 - 127ms
+  * 0x80 - 0xF0: reserved
+  * 0xF1 - 0xF9: 100us - 900us
+  * 0xFA - 0xFF: reserved
+  * default 0x7F, 127ms
+  */
+  if(sep_time <= 0x7F)
     delay(sep_time);
-  else
+  else if ((sep_time >= 0xF1) && (sep_time <= 0xF9))
     delayMicroseconds((sep_time-0xF0)*100);
+  else
+    delay(0x7F);
 }
 
 uint8_t IsoTp::rcv_sf(struct Message_t* msg)
