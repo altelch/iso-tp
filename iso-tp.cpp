@@ -355,7 +355,7 @@ uint8_t IsoTp::send(Message_t* msg)
 #ifdef ISO_TP_DEBUG
                                  Serial.println(F("Send CF"));
 #endif
-                                 while(msg->len>7 & !bs)
+                                 while(msg->len>7 && !bs)
                                  {
                                    fc_delay(msg->min_sep_time);
                                    if(!(retval=send_cf(msg)))
