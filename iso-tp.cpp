@@ -286,6 +286,9 @@ uint8_t IsoTp::rcv_fc(struct Message_t* msg)
 
 uint8_t IsoTp::send(Message_t* msg)
 {
+  uint8_t* origBuffer = msg->Buffer;
+  uint16_t origLen = msg->len;
+
   uint8_t bs=false;
   INT32U delta=0;
   uint8_t retval=0;
@@ -430,7 +433,9 @@ uint8_t IsoTp::send(Message_t* msg)
       }
     }
   }
-
+  msg->Buffer = origBuffer;
+  msg->len = origLen;
+  
   return retval;
 }
 
