@@ -38,8 +38,7 @@ typedef enum {
 #define TIMEOUT_CF       250 /* Timeout between CFs                          */
 #define MAX_FCWAIT_FRAME  10
 
-#define MAX_MSGBUF 128    /* Received Message Buffer. Depends on uC ressources!
-                             Should be enough for our needs */
+#define MAX_MSGBUF 4095   /* Received Message Buffer (ISO-TP max FF_DL is 4095) */
 struct Message_t
 {
   uint16_t len=0;
@@ -71,6 +70,7 @@ class IsoTp
     INT32U   wait_fc=0;
     INT32U   wait_cf=0;
     INT32U   wait_session=0;
+    uint16_t _max_message_size;
     uint8_t  can_send(INT32U id, uint8_t len, uint8_t *data);
     uint8_t  can_receive(void);
     uint8_t  send_fc(struct Message_t* msg);

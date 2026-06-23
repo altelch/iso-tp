@@ -8,6 +8,7 @@ IsoTp::IsoTp(MCP_CAN* bus, uint8_t mcp_int)
 {
   _mcp_int = mcp_int;
   _bus = bus;
+  _max_message_size = MAX_MSGBUF;
 }
 
 void IsoTp::print_buffer(INT32U id, uint8_t *buffer, uint16_t len)
@@ -140,11 +141,14 @@ uint8_t IsoTp::rcv_ff(struct Message_t* msg)
   /* get the FF_DL */
   msg->len = (rxBuffer[0] & 0x0F) << 8;
   msg->len += rxBuffer[1];
-  rest=msg->len;
+
+  if (msg->len > _max_message_size) {
+      msg->len = _max_message_size;
+  }
 
   /* copy the first received data bytes */
   memcpy(msg->Buffer,rxBuffer+2,6); // Skip 2 bytes PCI, FF must have 6 bytes!
-  rest-=6; // Restlength
+  rest=msg->len - 6; // Restlength
 
   msg->tp_state = ISOTP_WAIT_DATA;
 
@@ -201,9 +205,17 @@ uint8_t IsoTp::rcv_cf(struct Message_t* msg)
     return 1;
   }
 
+  uint16_t offset = 6 + 7 * (msg->seq_id - 1);
+  uint16_t remaining_buf = (offset < _max_message_size) ? (_max_message_size - offset) : 0;
+  if (remaining_buf == 0) {
+    msg->tp_state = ISOTP_FINISHED;
+    return 0;
+  }
+
   if(rest<=7) // Last Frame
   {
-    memcpy(msg->Buffer+6+7*(msg->seq_id-1),rxBuffer+1,rest);// 6 Bytes in FF +7
+    uint16_t to_copy = (rest < remaining_buf) ? rest : remaining_buf;
+    memcpy(msg->Buffer+offset,rxBuffer+1,to_copy);
     msg->tp_state=ISOTP_FINISHED;                           // per CF skip PCI
 #ifdef ISO_TP_DEBUG
     Serial.print(F("Last CF received with seq. ID: "));
@@ -216,9 +228,15 @@ uint8_t IsoTp::rcv_cf(struct Message_t* msg)
     Serial.print(F("CF received with seq. ID: "));
     Serial.println(msg->seq_id);
 #endif
-    memcpy(msg->Buffer+6+7*(msg->seq_id-1),rxBuffer+1,7); // 6 Bytes in FF +7
-                                                          // per CF
-    rest-=7; // Got another 7 Bytes of Data;
+    if (remaining_buf >= 7) {
+        memcpy(msg->Buffer+offset,rxBuffer+1,7); // 6 Bytes in FF +7 per CF
+        rest -= 7;
+    } else {
+        uint16_t to_copy = remaining_buf;
+        memcpy(msg->Buffer+offset,rxBuffer+1,to_copy);
+        msg->tp_state = ISOTP_FINISHED;
+        return 0;
+    }
   }
 
   msg->seq_id++;
