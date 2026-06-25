@@ -8,7 +8,12 @@ IsoTp::IsoTp(MCP_CAN* bus, uint8_t mcp_int)
 {
   _mcp_int = mcp_int;
   _bus = bus;
-  _max_message_size = MAX_MSGBUF;
+}
+
+/* Bytes the caller's Buffer can hold; 0 means the MAX_MSGBUF fallback. */
+uint16_t IsoTp::buffer_capacity(struct Message_t* msg)
+{
+  return msg->buffer_size ? msg->buffer_size : MAX_MSGBUF;
 }
 
 void IsoTp::print_buffer(INT32U id, uint8_t *buffer, uint16_t len)
@@ -125,8 +130,14 @@ void IsoTp::fc_delay(uint8_t sep_time)
 
 uint8_t IsoTp::rcv_sf(struct Message_t* msg)
 {
+  uint16_t cap = buffer_capacity(msg);
+
   /* get the SF_DL from the N_PCI byte */
   msg->len = rxBuffer[0] & 0x0F;
+  /* SF holds <= 7 bytes; clamp to frame and buffer to bound read and write */
+  if (msg->len > 7) msg->len = 7;
+  if (rxLen > 0 && msg->len > (uint16_t)(rxLen - 1)) msg->len = rxLen - 1;
+  if (msg->len > cap) msg->len = cap;
   /* copy the received data bytes */
   memcpy(msg->Buffer,rxBuffer+1,msg->len); // Skip PCI, SF uses len bytes
   msg->tp_state=ISOTP_FINISHED;
@@ -136,18 +147,33 @@ uint8_t IsoTp::rcv_sf(struct Message_t* msg)
 
 uint8_t IsoTp::rcv_ff(struct Message_t* msg)
 {
+  uint16_t cap = buffer_capacity(msg);
+
   msg->seq_id=1;
 
-  /* get the FF_DL */
+  /* get the FF_DL (12 bits wide, so intrinsically <= 4095) */
   msg->len = (rxBuffer[0] & 0x0F) << 8;
   msg->len += rxBuffer[1];
 
-  if (msg->len > _max_message_size) {
-      msg->len = _max_message_size;
+  /* FF is only valid for FF_DL > 7; reject malformed short FF (rest underflow) */
+  if (msg->len < 8)
+  {
+    msg->tp_state = ISOTP_ERROR;
+    return 1;
   }
 
-  /* copy the first received data bytes */
-  memcpy(msg->Buffer,rxBuffer+2,6); // Skip 2 bytes PCI, FF must have 6 bytes!
+  if (msg->len > cap) msg->len = cap;
+
+  /* copy the first 6 data bytes, bounded by the buffer */
+  uint16_t first = (cap < 6) ? cap : 6;
+  memcpy(msg->Buffer,rxBuffer+2,first); // Skip 2 bytes PCI
+
+  if (msg->len <= 6) // no room for any CF
+  {
+    msg->tp_state = ISOTP_FINISHED;
+    return 0;
+  }
+
   rest=msg->len - 6; // Restlength
 
   msg->tp_state = ISOTP_WAIT_DATA;
@@ -205,8 +231,9 @@ uint8_t IsoTp::rcv_cf(struct Message_t* msg)
     return 1;
   }
 
-  uint16_t offset = 6 + 7 * (msg->seq_id - 1);
-  uint16_t remaining_buf = (offset < _max_message_size) ? (_max_message_size - offset) : 0;
+  uint16_t cap = buffer_capacity(msg);
+  uint32_t offset = 6u + 7u * (uint32_t)(msg->seq_id - 1);
+  uint16_t remaining_buf = (offset < cap) ? (uint16_t)(cap - offset) : 0;
   if (remaining_buf == 0) {
     msg->tp_state = ISOTP_FINISHED;
     return 0;

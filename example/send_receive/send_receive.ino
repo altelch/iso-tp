@@ -28,6 +28,8 @@ void setup()
   // buffers
   txMsg.Buffer = (uint8_t *)calloc(MAX_MSGBUF, sizeof(uint8_t));
   rxMsg.Buffer = (uint8_t *)calloc(MAX_MSGBUF, sizeof(uint8_t));
+  txMsg.buffer_size = MAX_MSGBUF;
+  rxMsg.buffer_size = MAX_MSGBUF;
 }
 
 void loop()
