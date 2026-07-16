@@ -398,6 +398,19 @@ uint8_t IsoTp::send(Message_t* msg)
 #ifdef ISO_TP_DEBUG
                                  Serial.println(F("Wait FC"));
 #endif
+                                 delta=millis()-wait_fc;
+                                 if(delta >= TIMEOUT_FC)
+                                 {
+#ifdef ISO_TP_DEBUG
+                                   Serial.print(F("FC timeout during receive"));
+                                   Serial.print(F(" wait_fc="));
+                                   Serial.print(wait_fc);
+                                   Serial.print(F(" delta="));
+                                   Serial.println(delta);
+#endif
+                                   msg->tp_state = ISOTP_IDLE;
+				   retval=1;
+                                 }
                                  break;
       case ISOTP_SEND_CF      :
 #ifdef ISO_TP_DEBUG
@@ -423,6 +436,7 @@ uint8_t IsoTp::send(Message_t* msg)
                                        {
                                          bs=true;
                                          msg->tp_state=ISOTP_WAIT_FC;
+                                         wait_fc=millis();
 #ifdef ISO_TP_DEBUG
                                          Serial.println(F(" yes"));
 #endif
